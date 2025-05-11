@@ -702,6 +702,8 @@ function showCandidateDetail() {
     }
 
     const candidate = preferenzeData.find(c => c.Candidato === candidateName);
+    delete candidate["index"];
+    delete candidate[""];
     if (!candidate) return;
 
     // Update candidate info
