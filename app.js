@@ -447,7 +447,7 @@ function initCandidatesTab() {
         <div class="card mb-4">
             <div class="card-header">Classifica candidati</div>
             <div class="card-body">
-                <div class="chart-container" style="height: 500px;">
+                <div class="chart-container" style="height: 800px;">
                     <canvas id="candidatesChart"></canvas>
                 </div>
             </div>
@@ -624,7 +624,7 @@ function updateCandidatesChart(candidates) {
     }
 
     // Show top 20 candidates
-    const topCandidates = candidates.slice(0, 20);
+    const topCandidates = candidates.slice(0, 36);
 
     window.candidatesChart = new Chart(ctx, {
         type: 'bar',
