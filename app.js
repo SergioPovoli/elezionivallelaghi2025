@@ -5,8 +5,8 @@ let preferenzeData, risultatiData;
 document.addEventListener('DOMContentLoaded', function () {
     // Load data
     Promise.all([
-        fetch('../data/preferenze_2025.csv').then(response => response.text()),
-        fetch('../data/risultati_liste_vallelaghi_2025.csv').then(response => response.text())
+        fetch('data/preferenze_2025.csv').then(response => response.text()),
+        fetch('data/risultati_liste_vallelaghi_2025.csv').then(response => response.text())
     ]).then(([preferenzeCSV, risultatiCSV]) => {
         preferenzeData = parseCSV(preferenzeCSV);
         risultatiData = parseCSV(risultatiCSV);
