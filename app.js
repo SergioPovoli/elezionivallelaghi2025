@@ -292,7 +292,7 @@ function initOverviewTab() {
         <div class="card">
             <div class="card-header">Composizione Consiglio Comunale</div>
             <div class="card-body">
-                <div class="chart-container" style="height: 500px;">
+                <div class="chart-container" style="height: 500px; min-height: 300px;">
                     <canvas id="councilCompositionChart"></canvas>
                 </div>
                 <p class="text-muted mt-2">
@@ -328,6 +328,9 @@ function initOverviewTab() {
                 display: true,
                 text: 'Risultato Complessivo',
                 font: { size: 16 }
+            },
+            legend: {
+                display: false,
             }
         }
     });
@@ -815,7 +818,7 @@ function updateComparison() {
     delete cand2Data[""];
 
     if (!cand1Data || !cand2Data) return;
-    
+
 
     document.getElementById('compareName1').textContent = cand1Data.Candidato;
     document.getElementById('compareName2').textContent = cand2Data.Candidato;
@@ -944,7 +947,7 @@ function darkenColor(color) {
 
 function initTerritoryTab() {
     const tabContent = document.querySelector('#territory');
-    
+
     const html = `
         <h2 class="mb-4">Analisi Territoriale</h2>
         
@@ -1024,9 +1027,9 @@ function initTerritoryTab() {
                 </div>
             </div>
     `;
-    
+
     tabContent.innerHTML = html;
-    
+
     // Initialize the tab functionality
     setupTerritoryTab();
 }
@@ -1035,7 +1038,7 @@ function setupTerritoryTab() {
     // Get available locations (sezioni)
     const locations = ['VEZZANO', 'RANZO', 'PADERGNONE', 'TERLAGO', 'COVELO'];
     const locationSelect = document.getElementById('locationSelect');
-    
+
     // Populate location dropdown
     locations.forEach(location => {
         const option = document.createElement('option');
@@ -1043,7 +1046,7 @@ function setupTerritoryTab() {
         option.textContent = location;
         locationSelect.appendChild(option);
     });
-    
+
     // Set up event listener
     locationSelect.addEventListener('change', updateTerritoryAnalysis);
 }
@@ -1051,24 +1054,24 @@ function setupTerritoryTab() {
 function updateTerritoryAnalysis() {
     const location = document.getElementById('locationSelect').value;
     const contentDiv = document.getElementById('locationAnalysisContent');
-    
+
     if (!location) {
         contentDiv.style.display = 'none';
         return;
     }
-    
+
     // Show content
     contentDiv.style.display = 'block';
-    
+
     // Update metrics
     const totalVotes = risultatiData.find(row => row.Voce === 'Totale')[location];
     const percFuturo = risultatiData.find(row => row.Voce === '% FUTURO')[location];
     const percProgetto = risultatiData.find(row => row.Voce === '% PROGETTO')[location];
-    
+
     document.getElementById('totalVotesLocation').textContent = parseInt(totalVotes).toLocaleString();
     document.getElementById('percentFuturo').textContent = `${parseFloat(percFuturo).toFixed(1)}%`;
     document.getElementById('percentProgetto').textContent = `${parseFloat(percProgetto).toFixed(1)}%`;
-    
+
     // Update charts
     updateLocationResultsChart(location);
     updateTopCandidatesChart(location);
@@ -1076,12 +1079,12 @@ function updateTerritoryAnalysis() {
 
 function updateLocationResultsChart(location) {
     const ctx = document.getElementById('locationResultsChart_1').getContext('2d');
-    
+
     // Destroy previous chart if exists
     if (window.locationResultsChart instanceof Chart) {
         window.locationResultsChart.destroy();
     }
-    
+
     const results = [
         {
             list: 'FUTURO VALLELAGHI',
@@ -1094,7 +1097,7 @@ function updateLocationResultsChart(location) {
             percent: parseFloat(risultatiData.find(row => row.Voce === '% PROGETTO')[location])
         }
     ];
-    
+
     console.log(ctx)
     window.locationResultsChart = new Chart(ctx, {
         type: 'doughnut',
@@ -1122,7 +1125,7 @@ function updateLocationResultsChart(location) {
                 },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             const data = results[context.dataIndex];
                             return `${data.list}: ${data.votes.toLocaleString()} voti (${data.percent.toFixed(1)}%)`;
                         }
@@ -1137,15 +1140,15 @@ function updateLocationResultsChart(location) {
 function updateTopCandidatesChart(location) {
     const ctx = document.getElementById('topCandidatesChart').getContext('2d');
     const tableBody = document.querySelector('#topCandidatesDataTable tbody');
-    
+
     // Destroy previous chart if exists
     if (window.topCandidatesChart instanceof Chart) {
         window.topCandidatesChart.destroy();
     }
-    
+
     // Clear table
     tableBody.innerHTML = '';
-    
+
     // Get location column name in preferenzeData (different format)
     const locationMapping = {
         'VEZZANO': 'Vezzano',
@@ -1155,16 +1158,16 @@ function updateTopCandidatesChart(location) {
         'COVELO': 'Covelo'
     };
     const prefLocation = locationMapping[location] || location;
-    
+
     // Get top 10 candidates for this location
     const topCandidates = [...preferenzeData]
         .filter(candidate => candidate[prefLocation] && !isNaN(candidate[prefLocation]))
         .sort((a, b) => parseInt(b[prefLocation]) - parseInt(a[prefLocation]))
         .slice(0, 10);
-    
+
     // Calculate total votes in this location for percentage
     const totalLocationVotes = topCandidates.reduce((sum, candidate) => sum + parseInt(candidate[prefLocation]), 0);
-    
+
     // Prepare chart data
     const chartData = topCandidates.map(candidate => ({
         candidate: candidate.Candidato,
@@ -1172,7 +1175,7 @@ function updateTopCandidatesChart(location) {
         percentage: ((parseInt(candidate[prefLocation]) / totalLocationVotes) * 100).toFixed(1),
         list: candidate.Lista
     }));
-    
+
     // Create chart
     window.topCandidatesChart = new Chart(ctx, {
         type: 'bar',
@@ -1181,10 +1184,10 @@ function updateTopCandidatesChart(location) {
             datasets: [{
                 label: 'Voti',
                 data: chartData.map(d => d.votes),
-                backgroundColor: chartData.map(d => 
+                backgroundColor: chartData.map(d =>
                     d.list === 'FUTURO VALLELAGHI' ? 'rgba(255, 127, 14, 0.8)' : 'rgba(31, 119, 180, 0.8)'
                 ),
-                borderColor: chartData.map(d => 
+                borderColor: chartData.map(d =>
                     d.list === 'FUTURO VALLELAGHI' ? 'rgba(255, 127, 14, 1)' : 'rgba(31, 119, 180, 1)'
                 ),
                 borderWidth: 1
@@ -1198,7 +1201,7 @@ function updateTopCandidatesChart(location) {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             const data = chartData[context.dataIndex];
                             return [
                                 `Voti: ${data.votes.toLocaleString()}`,
@@ -1213,7 +1216,7 @@ function updateTopCandidatesChart(location) {
                 x: {
                     beginAtZero: true,
                     ticks: {
-                        callback: function(value) {
+                        callback: function (value) {
                             return value.toLocaleString();
                         }
                     }
@@ -1221,14 +1224,13 @@ function updateTopCandidatesChart(location) {
             }
         }
     });
-    
+
     // Populate table
     chartData.forEach(data => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${data.candidate}</td>
-            <td><span class="badge" style="background-color: ${
-                data.list === 'FUTURO VALLELAGHI' ? 'var(--futuro-color)' : 'var(--progetto-color)'
+            <td><span class="badge" style="background-color: ${data.list === 'FUTURO VALLELAGHI' ? 'var(--futuro-color)' : 'var(--progetto-color)'
             }">${data.list}</span></td>
             <td>${data.votes.toLocaleString()}</td>
             <td>${data.percentage}%</td>
@@ -1240,7 +1242,7 @@ function updateTopCandidatesChart(location) {
 
 function initDataTab() {
     const tabContent = document.querySelector('#data');
-    
+
     const html = `
         <h2 class="mb-4">Dati Grezzi</h2>
         
@@ -1414,9 +1416,9 @@ function initDataTab() {
             </div>
         </div>
     `;
-    
+
     tabContent.innerHTML = html;
-    
+
     // Initialize the tab functionality
     setupDataTab();
 }
@@ -1425,22 +1427,22 @@ function setupDataTab() {
     // Initialize multiple select filters
     const prefListFilter = document.getElementById('prefListFilter');
     const prefLocationFilter = document.getElementById('prefLocationFilter');
-    
+
     // Make them multiple select
     prefListFilter.multiple = true;
     prefLocationFilter.multiple = true;
-    
+
     // Add custom styling
     prefListFilter.classList.add('form-control');
     prefLocationFilter.classList.add('form-control');
-    
+
     // Add event listeners
     prefListFilter.addEventListener('change', updatePreferencesTable);
     prefLocationFilter.addEventListener('change', updatePreferencesTable);
     document.getElementById('exportPrefCSV').addEventListener('click', exportPreferencesCSV);
     document.getElementById('exportResultsCSV').addEventListener('click', exportResultsCSV);
     document.getElementById('exportPercentagesCSV').addEventListener('click', exportPercentagesCSV);
-    
+
     // Initialize tables
     updatePreferencesTable();
     updateResultsTable();
@@ -1450,40 +1452,40 @@ function updatePreferencesTable() {
     const tableBody = document.querySelector('#preferencesTable tbody');
     const listFilter = Array.from(document.getElementById('prefListFilter').selectedOptions).map(opt => opt.value);
     const locationFilter = Array.from(document.getElementById('prefLocationFilter').selectedOptions).map(opt => opt.value);
-    
+
     // Filter data
     let filteredData = [...preferenzeData];
-    
+
     if (listFilter.length > 0) {
         filteredData = filteredData.filter(row => listFilter.includes(row.Lista));
     }
-    
+
     // Always show these columns regardless of location filter
     const alwaysShowCols = ['Candidato', 'Lista', 'Totale'];
-    
+
     // Get location columns to show
     let locationCols = ['Vezzano', 'Ranzo', 'Padergnone', 'Terlago', 'Covelo'];
     if (locationFilter.length > 0) {
         locationCols = locationFilter;
     }
-    
+
     // Clear and rebuild table
     tableBody.innerHTML = '';
-    
+
     // Update metrics
     document.getElementById('prefTotalCandidates').textContent = filteredData.length;
-    
+
     const totalVotes = filteredData.reduce((sum, row) => sum + parseInt(row.Totale), 0);
     document.getElementById('prefTotalVotes').textContent = totalVotes.toLocaleString();
-    
+
     const totalBallots = parseInt(risultatiData.find(row => row.Voce === 'Totale')['TOTALE']);
     const avgPerVote = (totalVotes / totalBallots).toFixed(2);
     document.getElementById('prefAvgPerVote').textContent = avgPerVote;
-    
+
     // Populate table
     filteredData.forEach(row => {
         const tr = document.createElement('tr');
-        
+
         // Always show these columns
         alwaysShowCols.forEach(col => {
             const td = document.createElement('td');
@@ -1492,33 +1494,32 @@ function updatePreferencesTable() {
                 td.style.fontWeight = 'bold';
             } else {
                 td.textContent = row[col];
-                
+
                 if (col === 'Lista') {
-                    td.innerHTML = `<span class="badge" style="background-color: ${
-                        row[col] === 'FUTURO VALLELAGHI' ? 'var(--futuro-color)' : 'var(--progetto-color)'
-                    }">${row[col]}</span>`;
+                    td.innerHTML = `<span class="badge" style="background-color: ${row[col] === 'FUTURO VALLELAGHI' ? 'var(--futuro-color)' : 'var(--progetto-color)'
+                        }">${row[col]}</span>`;
                 }
             }
             tr.appendChild(td);
         });
-        
+
         // Add location columns
         locationCols.forEach(loc => {
             const td = document.createElement('td');
             const votes = parseInt(row[loc]) || 0;
             td.textContent = votes.toLocaleString();
-            
+
             // Highlight if this is a location filter match
             if (locationFilter.length > 0 && locationFilter.includes(loc)) {
                 td.style.backgroundColor = 'rgba(13, 110, 253, 0.1)';
             }
-            
+
             tr.appendChild(td);
         });
-        
+
         tableBody.appendChild(tr);
     });
-    
+
     // Show/hide location columns in header
     const headerCells = document.querySelectorAll('#preferencesTable thead th');
     for (let i = 2; i < headerCells.length; i++) { // Skip first two columns
@@ -1533,46 +1534,46 @@ function updatePreferencesTable() {
 
 function updateResultsTable() {
     const tableBody = document.querySelector('#resultsTable tbody');
-    
+
     // Clear and rebuild table
     tableBody.innerHTML = '';
-    
+
     risultatiData.forEach(row => {
         const tr = document.createElement('tr');
-        
+
         // Add Voce column
         const tdVoce = document.createElement('td');
         tdVoce.textContent = row.Voce;
-        
+
         if (row.Voce.startsWith('%')) {
             tdVoce.style.fontWeight = 'bold';
             tdVoce.style.color = '#0d6efd';
         } else if (row.Voce === 'Totale') {
             tdVoce.style.fontWeight = 'bold';
         }
-        
+
         tr.appendChild(tdVoce);
-        
+
         // Add location columns
         ['VEZZANO', 'RANZO', 'PADERGNONE', 'TERLAGO', 'COVELO', 'TOTALE'].forEach(loc => {
             const td = document.createElement('td');
             const value = row[loc];
-            
+
             if (row.Voce.startsWith('%')) {
                 td.textContent = `${parseFloat(value).toFixed(1)}%`;
                 td.style.fontWeight = 'bold';
                 td.style.color = '#0d6efd';
             } else {
                 td.textContent = parseInt(value).toLocaleString();
-                
+
                 if (loc === 'TOTALE') {
                     td.style.fontWeight = 'bold';
                 }
             }
-            
+
             tr.appendChild(td);
         });
-        
+
         tableBody.appendChild(tr);
     });
 }
@@ -1580,29 +1581,29 @@ function updateResultsTable() {
 function exportPreferencesCSV() {
     const listFilter = Array.from(document.getElementById('prefListFilter').selectedOptions).map(opt => opt.value);
     const locationFilter = Array.from(document.getElementById('prefLocationFilter').selectedOptions).map(opt => opt.value);
-    
+
     // Filter data
     let filteredData = [...preferenzeData];
-    
+
     if (listFilter.length > 0) {
         filteredData = filteredData.filter(row => listFilter.includes(row.Lista));
     }
-    
+
     // Get columns to include
     const cols = ['Candidato', 'Lista'];
     const locationCols = ['Vezzano', 'Ranzo', 'Padergnone', 'Terlago', 'Covelo'];
-    
+
     if (locationFilter.length > 0) {
         cols.push(...locationFilter);
     } else {
         cols.push(...locationCols);
     }
-    
+
     cols.push('Totale');
-    
+
     // Prepare CSV content
     let csvContent = cols.join(';') + '\n';
-    
+
     filteredData.forEach(row => {
         const rowData = cols.map(col => {
             if (col === 'Totale') {
@@ -1612,7 +1613,7 @@ function exportPreferencesCSV() {
         });
         csvContent += rowData.join(';') + '\n';
     });
-    
+
     // Create download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -1628,7 +1629,7 @@ function exportPreferencesCSV() {
 function exportResultsCSV() {
     // Prepare CSV content
     let csvContent = 'Voce;VEZZANO;RANZO;PADERGNONE;TERLAGO;COVELO;TOTALE\n';
-    
+
     risultatiData.forEach(row => {
         const rowData = [
             row.Voce,
@@ -1641,7 +1642,7 @@ function exportResultsCSV() {
         ];
         csvContent += rowData.join(';') + '\n';
     });
-    
+
     // Create download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -1657,10 +1658,10 @@ function exportResultsCSV() {
 function exportPercentagesCSV() {
     // Filter only percentage rows
     const percentageData = risultatiData.filter(row => row.Voce.startsWith('%'));
-    
+
     // Prepare CSV content
     let csvContent = 'Voce;VEZZANO;RANZO;PADERGNONE;TERLAGO;COVELO;TOTALE\n';
-    
+
     percentageData.forEach(row => {
         const rowData = [
             row.Voce,
@@ -1673,7 +1674,7 @@ function exportPercentagesCSV() {
         ];
         csvContent += rowData.join(';') + '\n';
     });
-    
+
     // Create download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
